@@ -583,7 +583,7 @@ export default function App() {
                   <input
                     ref={inputRef}
                     type="file"
-                    accept=".pdf,.docx,.txt"
+                    accept=".pdf,.docx,.txt,.pptx"
                     style={{ display: 'none' }}
                     onChange={(e) => handleFile(e.target.files[0])}
                   />
