@@ -467,8 +467,8 @@ export default function App() {
 
   const handleFile = (f) => {
     if (!f) return
-    const ok = f.name.endsWith('.pdf') || f.name.endsWith('.docx') || f.name.endsWith('.txt')
-    if (!ok) { setError('Поддерживаются только PDF, DOCX, TXT'); return }
+    const ok = f.name.endsWith('.pdf') || f.name.endsWith('.docx') || f.name.endsWith('.txt') || f.name.endsWith('.pptx')
+    if (!ok) { setError('Поддерживаются только PDF, DOCX, PPTX, TXT'); return }
     setFile(f)
     setError('')
     setStatus('idle')
@@ -576,7 +576,7 @@ export default function App() {
                     Выбрать файл
                   </button>
                   <div className="formats">
-                    {['PDF', 'DOCX', 'TXT'].map(f => (
+                    {['PDF', 'DOCX', 'PPTX', 'TXT'].map(f => (
                       <span key={f} className="format-pill">{f}</span>
                     ))}
                   </div>
