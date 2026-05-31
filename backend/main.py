@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import fitz
 from docx import Document
+from pptx import Presentation
 from docx.shared import Pt
 
 app = FastAPI()
@@ -27,6 +28,18 @@ def extract_text_from_pdf(b):
 def extract_text_from_docx(b):
     doc = Document(io.BytesIO(b))
     return "\n".join(p.text for p in doc.paragraphs if p.text.strip()).strip()
+
+def extract_text_from_pptx(b):
+    prs = Presentation(io.BytesIO(b))
+    texts = []
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for para in shape.text_frame.paragraphs:
+                    line = " ".join(run.text for run in para.runs).strip()
+                    if line:
+                        texts.append(line)
+    return "\n".join(texts).strip()
 
 def translate_to_kazakh(text):
     prompt = f"""Сен — қазақ тілінің кәсіби аудармашысысың. Мемлекеттік құжаттарды аударуда тәжірибелісің.
@@ -63,13 +76,15 @@ def root():
 @app.post("/translate")
 async def translate_document(file: UploadFile = File(...)):
     name = file.filename.lower()
-    if not (name.endswith(".pdf") or name.endswith(".docx") or name.endswith(".txt")):
-        raise HTTPException(400, "Только PDF, DOCX, TXT")
+    if not (name.endswith(".pdf") or name.endswith(".docx") or name.endswith(".txt") or name.endswith(".pptx")):
+        raise HTTPException(400, "Только PDF, DOCX, PPTX, TXT")
     b = await file.read()
     if name.endswith(".pdf"):
         text = extract_text_from_pdf(b)
     elif name.endswith(".docx"):
         text = extract_text_from_docx(b)
+    elif name.endswith(".pptx"):
+        text = extract_text_from_pptx(b)
     else:
         text = b.decode("utf-8")
     if not text.strip():
