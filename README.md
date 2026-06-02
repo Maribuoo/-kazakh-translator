@@ -1,21 +1,34 @@
-# Казахский переводчик документов
+# ИС Тілмаш — Казахский переводчик документов
+
+Переводит официальные документы (PDF, DOCX, PPTX, TXT) на казахский язык с помощью локальной AI модели через Ollama.
+
+## Требования
+
+- [Ollama](https://ollama.com) — локальный запуск моделей
+- Python 3.10+
+- Node.js
 
 ## Быстрый старт
 
-### 1. Получи API ключ
-Зайди на https://console.anthropic.com → Sign Up → API Keys → Create Key
-Скопируй ключ (начинается с `sk-ant-...`)
+### 1. Установи Ollama и скачай модель
+
+Скачай Ollama с [ollama.com](https://ollama.com) и запусти его.
+
+Затем скачай модель (выбери под свой сервер):
+
+```bash
+# Для Mac Apple Silicon (MLX-оптимизация)
+ollama pull qwen3.5:4b-mlx
+
+# Для сервера с GPU (NVIDIA)
+ollama pull qwen3.5:9b
+```
 
 ### 2. Запусти бэкенд
 
 ```bash
 cd backend
-
-# Установи зависимости (один раз)
 pip install -r requirements.txt
-
-# Укажи API ключ и запусти
-export ANTHROPIC_API_KEY="sk-ant-ВАШ_КЛЮЧ"
 uvicorn main:app --reload
 ```
 
@@ -25,11 +38,7 @@ uvicorn main:app --reload
 
 ```bash
 cd frontend
-
-# Установи зависимости (один раз)
 npm install
-
-# Запусти
 npm run dev
 ```
 
@@ -57,6 +66,14 @@ kazakh-translator/
 ## Поддерживаемые форматы
 - PDF
 - DOCX (Word)
+- PPTX (PowerPoint)
 - TXT
 
-Результат всегда выдаётся в формате DOCX.
+Результат выдаётся в формате DOCX.
+
+## Деплой на сервер с GPU
+
+1. Установи Ollama на сервер
+2. Скачай модель: `ollama pull qwen3.5:9b`
+3. Запусти бэкенд через nginx или напрямую по IP
+4. Фронтенд можно задеплоить на Vercel
