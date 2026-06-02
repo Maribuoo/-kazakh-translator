@@ -508,7 +508,7 @@ export default function App() {
       const form = new FormData()
       form.append('file', file)
 
-      const res = await fetch('https://kazakh-translator-production.up.railway.app/translate', { method: 'POST', body: form })
+      const res = await fetch('http://localhost:8000/translate', { method: 'POST', body: form })
 
       clearInterval(interval)
 

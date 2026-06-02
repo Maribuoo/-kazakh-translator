@@ -1,6 +1,6 @@
 import os
 import io
-import google.generativeai as genai
+import requests
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -18,8 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash")
+OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_MODEL = "qwen3.5:4b-mlx"
 
 def extract_text_from_pdf(b):
     doc = fitz.open(stream=b, filetype="pdf")
@@ -57,7 +57,13 @@ def translate_to_kazakh(text):
 
         Аударылатын мәтін:
         {text}"""
-    return model.generate_content(prompt).text
+    response = requests.post(OLLAMA_URL, json={
+        "model": OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": False
+    })
+    response.raise_for_status()
+    return response.json()["response"]
 
 def make_docx(text):
     doc = Document()
