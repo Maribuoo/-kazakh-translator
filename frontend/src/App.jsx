@@ -70,18 +70,43 @@ const styles = `
   .nav-right {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
   }
 
-  .nav-link {
-    font-size: 13px;
-    font-weight: 500;
+  .nav-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+  }
+
+  .nav-stat-value {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--blue-dark);
+    letter-spacing: -0.02em;
+  }
+
+  .nav-stat-value span { color: var(--blue); }
+
+  .nav-stat-label {
+    font-size: 10px;
     color: var(--text-muted);
-    text-decoration: none;
-    transition: color 0.15s;
+    font-weight: 500;
+    white-space: nowrap;
   }
 
-  .nav-link:hover { color: var(--blue); }
+  .nav-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+  }
 
   .nav-cta {
     background: var(--blue);
@@ -346,7 +371,7 @@ const styles = `
 
   /* ── UPLOAD SECTION ── */
   .upload-section {
-    padding: 64px 48px;
+    padding: 48px 48px 64px;
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -997,102 +1022,25 @@ export default function App() {
             <span className="nav-name">ИС Тілмаш</span>
           </div>
           <div className="nav-right">
-            <a href="#upload" className="nav-link">Аудару</a>
-            <a href="#benefits" className="nav-link">Мүмкіндіктер</a>
-            <a href="#process" className="nav-link">Процесс</a>
+            <div className="nav-stats">
+              <div className="nav-stat">
+                <div className="nav-stat-value">{stats.translations}<span>+</span></div>
+                <div className="nav-stat-label">Аударылған құжаттар</div>
+              </div>
+              <div className="nav-divider" />
+              <div className="nav-stat">
+                <div className="nav-stat-value">{stats.visits}<span>+</span></div>
+                <div className="nav-stat-label">Посещений</div>
+              </div>
+            </div>
             <button className="nav-cta" onClick={() => uploadRef.current?.scrollIntoView({ behavior: 'smooth' })}>
               Аударуды бастау →
             </button>
           </div>
         </nav>
 
-        {/* HERO */}
-        <section style={{ background: 'var(--white)', borderBottom: '1px solid var(--border)' }}>
-          <div className="hero">
-            <div className="hero-left">
-              <div className="hero-badge">
-                <div className="hero-dot" />
-                AI-powered official translation
-              </div>
-              <h1>Құжаттарды <span>қазақ</span> тіліне аудару</h1>
-              <p className="hero-sub">
-                PDF, DOCX, PPTX және TXT құжаттарын мемлекеттік стильге сәйкес жоғары сапада аудару
-              </p>
-              <div className="hero-trust">
-                {['Мемлекеттік стиль', 'AI негізіндегі аударма', 'Құжат құрылымын сақтау'].map(t => (
-                  <div key={t} className="trust-item">
-                    <div className="trust-check">✓</div>
-                    {t}
-                  </div>
-                ))}
-              </div>
-              <div className="hero-btns">
-                <button className="btn-primary" onClick={() => uploadRef.current?.scrollIntoView({ behavior: 'smooth' })}>
-                  Аударуды бастау →
-                </button>
-                <button className="btn-secondary" onClick={() => document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' })}>
-                  Мүмкіндіктер
-                </button>
-              </div>
-            </div>
-
-            {/* Hexagon grid */}
-            <div className="hero-right">
-              <div className="hex-grid">
-                {HEX_POSITIONS.map((h, i) => (
-                  <div
-                    key={i}
-                    className={`hex ${h.cls}`}
-                    style={{ top: h.top, left: h.left, transform: h.isCenter ? 'translate(-50%,-50%)' : 'translate(-50%,-50%)' }}
-                  >
-                    {h.isCenter ? (
-                      <>
-                        <span style={{ fontSize: 14, fontWeight: 800 }}>TILMASH</span>
-                        <span className="hex-label">AI</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="hex-icon">{h.icon}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700 }}>{h.label}</span>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* STATS */}
-        <section className="stats-section">
-          <div className="stats-inner">
-            <div className="stat-card">
-              <div className="stat-value">{stats.translations.toLocaleString()}<span>+</span></div>
-              <div className="stat-label">Аударылған құжаттар</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">{stats.visits.toLocaleString()}<span>+</span></div>
-              <div className="stat-label">Посещений</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">98<span>.7%</span></div>
-              <div className="stat-label">Сапа көрсеткіші</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">&lt;<span>2 мин</span></div>
-              <div className="stat-label">Орташа өңдеу уақыты</div>
-            </div>
-          </div>
-        </section>
-
         {/* UPLOAD */}
         <section id="upload" ref={uploadRef} className="upload-section">
-          <div className="section-header">
-            <div className="section-tag">Аударма сервисі</div>
-            <h2 className="section-title">Құжатыңызды жүктеңіз</h2>
-            <p className="section-sub">Файл немесе мәтін арқылы аударма жасаңыз</p>
-          </div>
-
           <div className="upload-card">
             <div className="tabs">
               <button className={`tab ${tab === 'file' ? 'active' : ''}`} onClick={() => { setTab('file'); reset() }}>
