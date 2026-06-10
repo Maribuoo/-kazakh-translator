@@ -369,6 +369,70 @@ const styles = `
     font-weight: 500;
   }
 
+  /* ── MODEL SELECTOR ── */
+  .model-bar {
+    padding: 16px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .model-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 4px;
+  }
+
+  .model-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .model-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  .model-btn.active-gemini {
+    background: #EFF6FF;
+    border-color: #38BDF8;
+    color: #0284C7;
+  }
+
+  .model-btn.active-groq {
+    background: #F0FDF4;
+    border-color: #4ADE80;
+    color: #16A34A;
+  }
+
+  .model-btn.active-ollama {
+    background: #FFF7ED;
+    border-color: #FB923C;
+    color: #EA580C;
+  }
+
+  .model-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .model-dot-gemini { background: #38BDF8; }
+  .model-dot-groq   { background: #4ADE80; }
+  .model-dot-ollama { background: #FB923C; }
+
   /* ── UPLOAD SECTION ── */
   .upload-section {
     padding: 48px 48px 64px;
@@ -875,18 +939,18 @@ const styles = `
   .footer-right { font-size: 12px; color: rgba(255,255,255,0.4); }
 `
 
-const STEPS = ['Құжатты оқу', 'Аудару', 'Файл жасау']
+const STEPS = ['Чтение документа', 'Перевод', 'Создание файла']
 const BENEFITS = [
-  { icon: '🏛️', title: 'Мемлекеттік стиль', desc: 'Ресми терминология мен мемлекеттік стандарттарға сәйкес аударма' },
-  { icon: '📐', title: 'Құрылымды сақтау', desc: 'Нөмірлеу, кесте және бөлімдер толық сақталады' },
-  { icon: '⚡', title: 'Жылдам өңдеу', desc: 'AI технологиясы арқылы минуттар ішінде нәтиже' },
-  { icon: '🔒', title: 'Қауіпсіздік', desc: 'Деректер сақталмайды, барлық аударма жасырын болады' },
+  { icon: '🏛️', title: 'Государственный стиль', desc: 'Официальная терминология в соответствии с государственными стандартами' },
+  { icon: '📐', title: 'Сохранение структуры', desc: 'Нумерация, таблицы и разделы сохраняются полностью' },
+  { icon: '⚡', title: 'Быстрая обработка', desc: 'Результат за минуты благодаря AI-технологии' },
+  { icon: '🔒', title: 'Безопасность', desc: 'Данные не сохраняются, все переводы конфиденциальны' },
 ]
 const PROCESS = [
-  { num: '01', icon: '📤', title: 'Жүктеу', desc: 'PDF, DOCX, PPTX немесе TXT файлды жүктеңіз' },
-  { num: '02', icon: '🤖', title: 'AI өңдеу', desc: 'Жасанды интеллект мәтінді талдайды' },
-  { num: '03', icon: '✅', title: 'Тексеру', desc: 'Терминология мен стиль тексерілді' },
-  { num: '04', icon: '📥', title: 'Жүктеп алу', desc: 'DOCX форматында нәтижені алыңыз' },
+  { num: '01', icon: '📤', title: 'Загрузка', desc: 'Загрузите файл PDF, DOCX, PPTX или TXT' },
+  { num: '02', icon: '🤖', title: 'Обработка AI', desc: 'Искусственный интеллект анализирует текст' },
+  { num: '03', icon: '✅', title: 'Проверка', desc: 'Терминология и стиль проверены' },
+  { num: '04', icon: '📥', title: 'Скачивание', desc: 'Получите результат в формате DOCX' },
 ]
 
 function formatSize(b) {
@@ -927,6 +991,7 @@ export default function App() {
   const [dragOver, setDragOver] = useState(false)
   const [stats, setStats] = useState({ visits: 0, translations: 0 })
   const [copied, setCopied] = useState(false)
+  const [model, setModel] = useState('gemini')
   const inputRef = useRef()
   const uploadRef = useRef()
 
@@ -938,7 +1003,7 @@ export default function App() {
   const handleFile = (f) => {
     if (!f) return
     const ok = ['.pdf','.docx','.txt','.pptx'].some(ext => f.name.toLowerCase().endsWith(ext))
-    if (!ok) { setError('Тек PDF, DOCX, PPTX, TXT форматтары қолданылады'); return }
+    if (!ok) { setError('Поддерживаются только форматы PDF, DOCX, PPTX, TXT'); return }
     setFile(f); setError(''); setStatus('idle'); setDownloadUrl(null)
   }
 
@@ -965,6 +1030,7 @@ export default function App() {
     try {
       const form = new FormData()
       form.append('file', file)
+      form.append('model', model)
       const res = await fetch(`${API}/translate`, { method: 'POST', body: form })
       clearInterval(iv)
       if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Қате')
@@ -976,7 +1042,7 @@ export default function App() {
       setTimeout(() => setStatus('done'), 300)
     } catch (e) {
       clearInterval(iv)
-      setError('Сервис уақытша қолжетімсіз. Қайталап көріңіз.')
+      setError('Сервис временно недоступен. Попробуйте ещё раз.')
       setStatus('error')
     }
   }
@@ -989,7 +1055,7 @@ export default function App() {
       const res = await fetch(`${API}/translate-text`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText })
+        body: JSON.stringify({ text: inputText, model })
       })
       clearInterval(iv)
       if (!res.ok) throw new Error((await res.json().catch(()=>({}))).detail || 'Қате')
@@ -999,7 +1065,7 @@ export default function App() {
       setTimeout(() => setStatus('done'), 300)
     } catch (e) {
       clearInterval(iv)
-      setError('Сервис уақытша қолжетімсіз. Қайталап көріңіз.')
+      setError('Сервис временно недоступен. Попробуйте ещё раз.')
       setStatus('error')
     }
   }
@@ -1018,14 +1084,14 @@ export default function App() {
         {/* NAV */}
         <nav className="nav">
           <div className="nav-left">
-            <span className="nav-badge">КТЖ</span>
+            <img src="/ktz-logo.png" alt="КТЖ" style={{ height: 52, objectFit: 'contain' }} />
             <span className="nav-name">ИС Тілмаш</span>
           </div>
           <div className="nav-right">
             <div className="nav-stats">
               <div className="nav-stat">
                 <div className="nav-stat-value">{stats.translations}<span>+</span></div>
-                <div className="nav-stat-label">Аударылған құжаттар</div>
+                <div className="nav-stat-label">Переведено документов</div>
               </div>
               <div className="nav-divider" />
               <div className="nav-stat">
@@ -1034,7 +1100,7 @@ export default function App() {
               </div>
             </div>
             <button className="nav-cta" onClick={() => uploadRef.current?.scrollIntoView({ behavior: 'smooth' })}>
-              Аударуды бастау →
+              Начать перевод →
             </button>
           </div>
         </nav>
@@ -1042,12 +1108,33 @@ export default function App() {
         {/* UPLOAD */}
         <section id="upload" ref={uploadRef} className="upload-section">
           <div className="upload-card">
+
+            {/* MODEL SELECTOR */}
+            <div className="model-bar">
+              <span className="model-label">AI модель:</span>
+              {[
+                { id: 'gemini', icon: '🔵', label: 'Gemini', sub: 'Google', cls: 'active-gemini', dot: 'model-dot-gemini' },
+                { id: 'groq',   icon: '⚡', label: 'Groq',   sub: 'Llama3', cls: 'active-groq',   dot: 'model-dot-groq' },
+                { id: 'ollama', icon: '🖥️', label: 'Локальная', sub: 'Ollama', cls: 'active-ollama', dot: 'model-dot-ollama' },
+              ].map(m => (
+                <button
+                  key={m.id}
+                  className={`model-btn ${model === m.id ? m.cls : ''}`}
+                  onClick={() => setModel(m.id)}
+                >
+                  {model === m.id && <div className={`model-dot ${m.dot}`} />}
+                  {m.icon} {m.label}
+                  <span style={{ fontSize: 11, opacity: 0.6, fontWeight: 500 }}>{m.sub}</span>
+                </button>
+              ))}
+            </div>
+
             <div className="tabs">
               <button className={`tab ${tab === 'file' ? 'active' : ''}`} onClick={() => { setTab('file'); reset() }}>
-                📎 Файл жүктеу
+                📎 Загрузить файл
               </button>
               <button className={`tab ${tab === 'text' ? 'active' : ''}`} onClick={() => { setTab('text'); reset() }}>
-                ✏️ Мәтін енгізу
+                ✏️ Ввести текст
               </button>
             </div>
 
@@ -1064,10 +1151,10 @@ export default function App() {
                       onClick={() => inputRef.current.click()}
                     >
                       <div className="upload-icon-wrap">📎</div>
-                      <div className="upload-title">Файлды осында сүйреңіз</div>
-                      <div className="upload-sub">немесе компьютерден таңдаңыз</div>
+                      <div className="upload-title">Перетащите файл сюда</div>
+                      <div className="upload-sub">или выберите с компьютера</div>
                       <button className="upload-btn" onClick={(e) => { e.stopPropagation(); inputRef.current.click() }}>
-                        Файл таңдау
+                        Выбрать файл
                       </button>
                       <div className="formats">
                         {['PDF', 'DOCX', 'PPTX', 'TXT'].map(f => (
@@ -1087,7 +1174,7 @@ export default function App() {
                         <button className="remove-btn" onClick={reset}>✕</button>
                       </div>
                       <button className="translate-btn" onClick={handleTranslateFile}>
-                        Аудару →
+                        Перевести →
                       </button>
                     </>
                   )}
@@ -1096,16 +1183,21 @@ export default function App() {
 
               {status === 'idle' && tab === 'text' && (
                 <>
-                  <textarea className="text-area" placeholder="Аударылатын мәтінді осында қойыңыз..." value={inputText} onChange={(e) => setInputText(e.target.value)} />
-                  <div className="char-count">{inputText.length} символ</div>
+                  <textarea className="text-area" placeholder="Вставьте текст для перевода..." value={inputText} onChange={(e) => setInputText(e.target.value)} />
+                  <div className="char-count">{inputText.length} символов</div>
                   <button className="translate-btn" onClick={handleTranslateText} disabled={!inputText.trim()}>
-                    Аудару →
+                    Перевести →
                   </button>
                 </>
               )}
 
               {status === 'loading' && (
                 <div className="progress-wrap">
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
+                    Модель: <strong style={{ color: model === 'gemini' ? '#0284C7' : model === 'groq' ? '#16A34A' : '#EA580C' }}>
+                      {model === 'gemini' ? '🔵 Gemini' : model === 'groq' ? '⚡ Groq' : '🖥️ Ollama (локальная)'}
+                    </strong>
+                  </div>
                   <div className="steps">
                     {STEPS.map((s, i) => (
                       <span key={i} style={{ display: 'flex', alignItems: 'center' }}>
@@ -1130,12 +1222,12 @@ export default function App() {
               {status === 'done' && tab === 'file' && (
                 <div className="success-card">
                   <div className="success-icon">✓</div>
-                  <div className="success-title">Аударма дайын!</div>
-                  <div className="success-sub">Файл сәтті қазақ тіліне аударылды</div>
+                  <div className="success-title">Перевод готов!</div>
+                  <div className="success-sub">Файл успешно переведён на казахский язык</div>
                   <a href={downloadUrl} download={downloadName} style={{ textDecoration: 'none' }}>
-                    <button className="download-btn">↓ DOCX жүктеу</button>
+                    <button className="download-btn">↓ Скачать DOCX</button>
                   </a>
-                  <button className="again-btn" onClick={reset}>Тағы аудару</button>
+                  <button className="again-btn" onClick={reset}>Перевести ещё</button>
                 </div>
               )}
 
@@ -1143,14 +1235,14 @@ export default function App() {
                 <>
                   <div className="success-card" style={{ marginBottom: 16 }}>
                     <div className="success-icon">✓</div>
-                    <div className="success-title">Аударма дайын!</div>
+                    <div className="success-title">Перевод готов!</div>
                   </div>
                   <div className="text-result">{translatedText}</div>
                   <div className="btn-row">
                     <button className="copy-btn" onClick={() => { navigator.clipboard.writeText(translatedText); setCopied(true); setTimeout(() => setCopied(false), 2000) }}>
-                      {copied ? '✓ Көшірілді' : '📋 Көшіру'}
+                      {copied ? '✓ Скопировано' : '📋 Копировать'}
                     </button>
-                    <button className="again-btn" onClick={reset}>Тағы аудару</button>
+                    <button className="again-btn" onClick={reset}>Перевести ещё</button>
                   </div>
                 </>
               )}
@@ -1161,7 +1253,7 @@ export default function App() {
                     <span>⚠</span>
                     <span>{error}</span>
                   </div>
-                  <button className="again-btn" onClick={reset}>Қайталап көру</button>
+                  <button className="again-btn" onClick={reset}>Попробовать снова</button>
                 </>
               )}
             </div>
@@ -1172,9 +1264,9 @@ export default function App() {
         <section id="benefits" className="benefits-section">
           <div style={{ maxWidth: 1200, margin: '0 auto' }}>
             <div className="section-header">
-              <div className="section-tag">Артықшылықтар</div>
-              <h2 className="section-title">Неліктен Тілмаш?</h2>
-              <p className="section-sub">Мемлекеттік стандарттарға сәйкес кәсіби аударма</p>
+              <div className="section-tag">Преимущества</div>
+              <h2 className="section-title">Почему ИС Тілмаш?</h2>
+              <p className="section-sub">Профессиональный перевод в соответствии с государственными стандартами</p>
             </div>
             <div className="benefits-grid">
               {BENEFITS.map(b => (
@@ -1192,8 +1284,8 @@ export default function App() {
         <section id="process" className="process-section">
           <div className="section-header">
             <div className="section-tag">Процесс</div>
-            <h2 className="section-title">Қалай жұмыс істейді?</h2>
-            <p className="section-sub">4 қадамда кәсіби аударма</p>
+            <h2 className="section-title">Как это работает?</h2>
+            <p className="section-sub">Профессиональный перевод за 4 шага</p>
           </div>
           <div className="process-steps">
             {PROCESS.map((p, i) => (
@@ -1210,10 +1302,10 @@ export default function App() {
         {/* FOOTER */}
         <footer className="footer">
           <div className="footer-left">
-            <span className="footer-badge">КТЖ</span>
+            <img src="/ktz-logo.png" alt="КТЖ" style={{ height: 32, width: 32, objectFit: 'contain' }} />
             ИС Тілмаш
           </div>
-          <div className="footer-right">© 2026 Қазақстан Темір Жолы · Барлық құқықтар қорғалған</div>
+          <div className="footer-right">© 2026 Казахстан Темир Жолы · Все права защищены</div>
         </footer>
       </div>
     </>
