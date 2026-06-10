@@ -54,8 +54,8 @@ def increment(key):
 # ── AI config ────────────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GROQ_API_KEY   = os.environ.get("Groq_API_KEY")   # именно так как в Railway
-OLLAMA_URL     = "http://localhost:11434/api/generate"
-OLLAMA_MODEL   = "qwen3.5:4b-mlx"
+OLLAMA_URL     = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
+OLLAMA_MODEL   = os.environ.get("OLLAMA_MODEL", "qwen3.5:4b-mlx")
 
 PROMPT_TEMPLATE = """Сен — қазақ тілінің кәсіби аудармашысысың. Мемлекеттік құжаттарды аударуда тәжірибелісің.
 
