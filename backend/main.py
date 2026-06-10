@@ -103,7 +103,7 @@ def translate_to_kazakh(text: str, model: str = "gemini") -> str:
             "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False
-        }, timeout=300)
+        }, headers={"ngrok-skip-browser-warning": "true"}, timeout=300)
         resp.raise_for_status()
         result = resp.json()["response"]
 
